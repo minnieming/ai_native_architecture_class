@@ -22,3 +22,26 @@ class ChatResponse(BaseModel): # 보통 서버에서 내려옴.
 
     answer: str = Field(..., description="모델 응답 본문")
     model: str = Field(..., description="실제 사용된 모델 식별")
+
+
+# chat_crew.py할때 들어온것 
+class CrewRequest(BaseModel):
+    """CrewAI /chat/crew 요청 본문.
+
+    자유 질문이 아니라 리서처·라이터가 협업할 '주제'를 받으므로
+    필드명을 topic으로 두어 의미를 명확히 합니다.
+    """
+
+    topic: str = Field(..., min_length=1, max_length=200, description="리서치 주제")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {"topic": "파이썬"}
+        }
+    }
+
+class ChatResponse(BaseModel):
+    """채팅 응답 본문."""
+
+    answer: str = Field(..., description="모델 응답 본문")
+    model: str = Field(..., description="실제 사용된 모델 식별자")
