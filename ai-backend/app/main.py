@@ -1,9 +1,21 @@
 from fastapi import FastAPI
 
+from fastapi.middleware.cors import CORSMiddleware # 저 위치에서 저 모듈을 import 하기 
+
 app = FastAPI(title="AI Backend", version="1.0.0")
 
 # .을 넣으면 위까지 안가고 여기에 있다라는거다. // 해당 폴더에서 모듈을 가져올 수 있도록 import 해주기
 from .schemas import ChatRequest, ChatResponse 
+from .middleware import add_process_time
+
+app.add_middleware( # 미들웨어에 등록할때 
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://localhost:8080"], # 허용하는 출처
+    allow_credentials=True, # 자격증명 허용여부
+    allow_methods=["*"], # 메소드, 헤더에 대해서 전부 허용
+    allow_headers=["*"],
+)
+app.middleware("http")(add_process_time) # app 자체에 미들웨어를 바로 가져
 
 @app.get("/health", tags=["meta"]) # tags는 문서에서 쓰는것, 태그끼리 묶어준다.
 def health() -> dict[str,str]: # json 객체 만들때 쓰는 문법, key, value의 타입을 지정하는 것. -> 함수는 json형태로 내려갈꺼다
