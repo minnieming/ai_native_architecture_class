@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 
+import logging
+
 from fastapi.middleware.cors import CORSMiddleware # 저 위치에서 저 모듈을 import 하기 
 
 app = FastAPI(title="AI Backend", version="1.0.0")
@@ -9,6 +11,13 @@ from .schemas import ChatRequest, ChatResponse
 from .routers import chat_crew, chat_langchain
 
 from .middleware import add_process_time
+
+from .errors import handle_unexpected
+
+logging.basicConfig( # 기본 설정. 
+    level=logging.INFO, # api콜 할때 info로 보냄
+    format="%(asctime)s %(levelname)s %(name)s — %(message)s", # 관련 내용
+)
 
 app.add_middleware( # 미들웨어에 등록할때 
     CORSMiddleware,
