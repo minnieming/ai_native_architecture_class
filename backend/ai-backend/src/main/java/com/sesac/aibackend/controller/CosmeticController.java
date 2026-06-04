@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 @RestController
-@RequestMapping("/legacy/cosmetics")
+@RequestMapping("/cosmetics")
 @RequiredArgsConstructor
 public class CosmeticController {
 
@@ -31,6 +31,7 @@ public class CosmeticController {
 
     }
 
+    // 입력으로 들어오는 값에 대한 validation은 컨트롤러 단에서 처리해야한다!
     @GetMapping("/{id}")
     public CosmeticResponse get (@PathVariable Long id) {
 
