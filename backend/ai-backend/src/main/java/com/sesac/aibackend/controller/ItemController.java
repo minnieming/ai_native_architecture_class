@@ -3,6 +3,7 @@ package com.sesac.aibackend.controller;
 import com.sesac.aibackend.domain.Item;
 import com.sesac.aibackend.dto.ItemRequest;
 import com.sesac.aibackend.dto.ItemResponse;
+import com.sesac.aibackend.error.NotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,9 @@ public class ItemController {
     @GetMapping("/{id}")
     public ItemResponse get(@PathVariable Long id) { // pathVariable 예시용
         Item item = storage.get(id);
+        if (item == null) {
+            throw NotFoundException.of("item", id);
+        }
         return ItemResponse.from(item);
     }
 
@@ -42,6 +46,9 @@ public class ItemController {
     @PutMapping("/{id}")
     public ItemResponse update(@PathVariable Long id, @Valid @RequestBody ItemRequest req) { // @valid request를 검증하겠다는 것 (어노테이션으로 해놓은 제약조건을 확인한다) -> 실패시 400에러
         Item existing = storage.get(id);
+        if (existing == null) {
+            throw NotFoundException.of("item", id);
+        }
         existing.setName(req.name());
         existing.setPrice(req.price());
         return ItemResponse.from(existing);
@@ -49,6 +56,9 @@ public class ItemController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
+        if (storage.remove(id) == null) {
+            throw NotFoundException.of("item", id);
+        }
         return ResponseEntity.noContent().build(); // nocontent는 404 떨어지고 끝난다.
     }
 
