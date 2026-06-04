@@ -23,7 +23,7 @@ public class CosmeticService {
 
         Cosmetic saved = Cosmetic.builder()
                 .id(id)
-                .sort(req.sort())
+                .category(req.category())
                 .name(req.name())
                 .price(req.price())
                 .build();
@@ -36,8 +36,6 @@ public class CosmeticService {
     public CosmeticResponse get (Long id) {
         Cosmetic cosmetic = storage.get(id);
 
-        if (cosmetic == null) throw NotFoundException.of("cosmetic", id);
-
         return CosmeticResponse.from(cosmetic);
     }
 
@@ -46,7 +44,7 @@ public class CosmeticService {
 
         if (existing == null) throw NotFoundException.of("cosmetic", id);
 
-        existing.setSort(req.sort());
+        existing.setCategory(req.category());
         existing.setName(req.name());
         existing.setPrice(req.price());
 

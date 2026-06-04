@@ -10,7 +10,7 @@ import lombok.*;
 public class Cosmetic {
 
     private Long id;
-    private String sort;
+    private String category;
     private String name;
     private int price;
 }
