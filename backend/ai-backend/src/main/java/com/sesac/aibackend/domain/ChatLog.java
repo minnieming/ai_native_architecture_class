@@ -18,7 +18,7 @@ public class ChatLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY) // one쪽을 바라보는 것. lazy : 처음에는 프록시 객체로 껴놨다가 필요할때 객체로 한다.
+    @ManyToOne(fetch = FetchType.LAZY) // one쪽을 바라보는 것. lazy : 처음에는 프록시 객체로 껴놨다가 필요할때 객체로 한다. -> 이것 때문에 발생하는 문제가 있다.
     @JoinColumn(name = "user_id", nullable = false) // 위랑 이건 짝꿍. 반드시 같이 가야한다.
     private User user;
 
