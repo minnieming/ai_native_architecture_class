@@ -42,3 +42,7 @@ out/
 ### Python ###
 __pycache__/
 *.pyc
+
+### Docker / DB ###
+pgdata/
+# 도커 볼륨 위치 올리지 X
