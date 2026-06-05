@@ -35,7 +35,7 @@ public class ChatLogService {
                         .response(response)
                         .build()
         );
-    }
+    } // 성공적으로 되면 commit후 닫아.
 
     /**
      * 기본 조회 — userId(PK)로 조회, fetch join 없음.
@@ -52,11 +52,11 @@ public class ChatLogService {
      * fetch join 조회 — userId(PK)로 조회하며 user를 함께 로딩.
      * 응답에서 getUser().getUsername()을 읽는 fromWithUsername()과 짝을 이룹니다.
      */
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true) // 얘는 연속상태에 있다.
     public List<ChatLog> findByUserIdWithUser(Long userId) { // user와 함께 fetch join 조회
         // 존재하지 않는 사용자는 404로 구분 (fetch join은 결과가 없으면 빈 리스트라 구분 불가)
         userRepository.findById(userId)
                 .orElseThrow(() -> NotFoundException.of("user", userId));
-        return chatLogRepository.findByUserIdWithUser(userId);
+        return chatLogRepository.findByUserIdWithUser(userId); // 얘는 영속상태랑 상관없다. 그래서 lazy ---- 이런 에러?가 나지 않는다.
     }
 }
