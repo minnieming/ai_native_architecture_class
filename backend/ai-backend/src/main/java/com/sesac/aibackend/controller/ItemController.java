@@ -4,64 +4,57 @@ import com.sesac.aibackend.domain.Item;
 import com.sesac.aibackend.dto.ItemRequest;
 import com.sesac.aibackend.dto.ItemResponse;
 import com.sesac.aibackend.error.NotFoundException;
+import com.sesac.aibackend.service.ItemService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong; // 자바가 제공하는 기본 클래스
 
 @RestController
-@RequestMapping("/legacy/items")
+@RequiredArgsConstructor
+@RequestMapping("/items")
 public class ItemController {
 
-    private final Map<Long, Item> storage = new ConcurrentHashMap<>(); // 스토리지. 인메모리에 저장
-    private final AtomicLong sequence = new AtomicLong(1); // 카운터. atomiclong : 안전하게 숫자를 증가 / 감소 시키기 위한 클래스
+    private final ItemService itemService;
 
     @GetMapping
     public List<ItemResponse> list() {
-        return storage.values().stream().map(ItemResponse::from).toList();
+        return itemService.findAll().stream().map(ItemResponse::from).toList();
     }
 
     @GetMapping("/{id}")
-    public ItemResponse get(@PathVariable Long id) { // pathVariable 예시용
-        Item item = storage.get(id);
-        if (item == null) {
-            throw NotFoundException.of("item", id);
-        }
+    public ItemResponse get(@PathVariable Long id) {
+        Item item = itemService.findById(id)
+                .orElseThrow(() -> NotFoundException.of("item", id));
         return ItemResponse.from(item);
     }
 
     @PostMapping
     public ResponseEntity<ItemResponse> create(@Valid @RequestBody ItemRequest req) {
-        long id = sequence.getAndIncrement(); // 1씩 증가. 이 메서드가 그렇다.
-        Item saved = Item.builder().id(id).name(req.name()).price(req.price()).build();
-        storage.put(id, saved); // 스토리지에 넣기
-        return ResponseEntity.created(URI.create("/legacy/items/" + id)).body(ItemResponse.from(saved));
+        Item saved = itemService.save(req.toEntity()); // req.toEntity로 객체로 만들어준다.
+        URI location = URI.create("/items/" + saved.getId()); // 서비스단에 보여주기 위해서
+        return ResponseEntity.created(location).body(ItemResponse.from(saved));
     }
 
     @PutMapping("/{id}")
-    public ItemResponse update(@PathVariable Long id, @Valid @RequestBody ItemRequest req) { // @valid request를 검증하겠다는 것 (어노테이션으로 해놓은 제약조건을 확인한다) -> 실패시 400에러
-        Item existing = storage.get(id);
-        if (existing == null) {
-            throw NotFoundException.of("item", id);
-        }
-        existing.setName(req.name());
-        existing.setPrice(req.price());
-        return ItemResponse.from(existing);
+    public ItemResponse update(@PathVariable Long id, @Valid @RequestBody ItemRequest req) {
+        Item item = itemService.findById(id) // id로 찾아서 오는건 영속된 상태로 오는 것.
+                .orElseThrow(() -> NotFoundException.of("item", id)); // 결과가 나오면 영속된걸로 오는것
+        item.setName(req.name());
+        item.setPrice(req.price());
+        return ItemResponse.from(itemService.save(item)); // 1차 캐시(스냅샷) 찍은거랑 달라 -> 그럼 영속화를 시작해야겠구나. 해서 영속성 컨텍스트를 실행한다.
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (storage.remove(id) == null) {
+        if (!itemService.existsById(id)) {
             throw NotFoundException.of("item", id);
         }
-        return ResponseEntity.noContent().build(); // nocontent는 404 떨어지고 끝난다.
+        itemService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
-
-    // 지금 api들은 공부를 위한 흉내만 낸것
-
 }
+
