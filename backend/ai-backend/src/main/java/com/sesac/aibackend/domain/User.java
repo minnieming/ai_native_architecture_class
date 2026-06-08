@@ -37,4 +37,30 @@ public class User {
     @Enumerated(EnumType.STRING) // enum을 처리해주는 것.
     @Column(nullable = false, length = 20)
     private Role role;
+
+    /** 인증 출처: "LOCAL"(폼 가입) 또는 "GOOGLE"(소셜 로그인). */
+    @Builder.Default
+    @Column(nullable = false, length = 20)
+    private String provider = "LOCAL";
+
+    /** 소셜 공급자의 안정적 고유 식별자(OIDC sub). LOCAL 사용자는 NULL. */
+    @Column(name = "provider_id", length = 255)
+    private String providerId; // 프로바이더(구글, 카카오등)마다 고유한 번호가 있다.
+
+    /**
+     * 소셜(OAuth2) 로그인 사용자 생성 팩토리.
+     *
+     * 로컬 비밀번호가 없으므로 passwordHash는 NULL로 두고,
+     * 구글이 보증하는 불변 식별자(sub)를 providerId에 저장합니다.
+     * 이로써 이 계정은 폼 로그인(/login)으로는 인증될 수 없고 구글 로그인만 가능합니다.
+     */
+    public static User oauthUser(String email, String providerId) { // 생성자 만들수 있는 메서드. oauth 인증하는 경우
+        return User.builder()
+                .username(email)
+                .passwordHash(null) // 비밀번호 없다.
+                .role(Role.USER)
+                .provider("GOOGLE")
+                .providerId(providerId)
+                .build();
+    }
 }

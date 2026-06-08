@@ -26,6 +26,7 @@ public class SecurityConfig {
     private final RestAccessDeniedHandler accessDeniedHandler;
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final CorsConfigurationSource corsConfigurationSource; // 이거 하면 브라우저 내에서도 cors 처리가 되서 된다.
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler; // 만들었던 핸들로 주입받아오기
 
     @Bean // dispatcher servlet이 api요청을 넘기기 전에 이 scrutiry를 거치게 하는 것.
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception { // SECURITY에서 HTTP 요청이 들어올때 HTTP 객체를 통째로 가져온다.
@@ -53,6 +54,12 @@ public class SecurityConfig {
                         // 그 외 모두 인증 필요 (Day 3 JPA CRUD, /chat 등)
                         .anyRequest().authenticated() // 놓친 API들을 위해, 그외 모든 요청은 전부 인증을 거쳐야 한아고 해놓은것.
                 )
+                // 구글 OAuth2 로그인 — 성공 시 핸들러가 앱 JWT를 발급 (Day 4 B7/B8)
+                // 인가 시작: GET /oauth2/authorization/google, 콜백: /login/oauth2/code/google (자동)
+                // 처음엔 .oauth2Login(Customizer.withDefaults()) 이걸로 합니다. 핸들러는 다음 파트에서 진행됩니다.
+                .oauth2Login(oauth2 -> oauth2.successHandler(oAuth2LoginSuccessHandler)) // 얘는 순서는 상관없고, 넣기만 하면 된다. 성공을 하면 해당 핸들러로 간다. (성공 핸들러가 사용자 조회 / 생성 할때 채가서 한다.
+                // 이거 분기처리는 핸들러 쪽에서 하면 된다.
+
                 // H2 콘솔 사용을 위한 헤더 완화 (개발 프로파일만)
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin())) // 아이프레임 위에서 동작하기 위해서 넣어준 것. (h2가 그래서 그런건가?)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class); // 해당 필터를 여기에 넣어준다.
