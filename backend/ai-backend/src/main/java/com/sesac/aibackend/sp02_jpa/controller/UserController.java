@@ -1,0 +1,57 @@
+package com.sesac.aibackend.sp02_jpa.controller;
+
+import com.sesac.aibackend.sp02_jpa.domain.User;
+import com.sesac.aibackend.sp02_jpa.dto.UserRequest;
+import com.sesac.aibackend.sp02_jpa.dto.UserResponse;
+import com.sesac.aibackend.sp01_restapi.error.NotFoundException;
+import com.sesac.aibackend.sp02_jpa.service.UserService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.net.URI;
+import java.util.List;
+
+@RestController
+@RequestMapping("/users")
+@RequiredArgsConstructor
+public class UserController {
+
+    private final UserService userService; // userservice의 빈 객체를 의존성 주입 해온다.
+
+    @GetMapping
+    public List<UserResponse> list() {
+        return userService.findAll().stream().map(UserResponse::from).toList();
+    }
+
+    @GetMapping("/{id}")
+    public UserResponse get(@PathVariable Long id) {
+        User user = userService.findById(id)
+                .orElseThrow(() -> NotFoundException.of("user", id)); // optional이라서 없을 경우는 에러 던지라고 함.
+        return UserResponse.from(user);
+    }
+
+    @PostMapping
+    public ResponseEntity<UserResponse> create(@Valid @RequestBody UserRequest req) {
+        // username은 unique 제약이 있으므로, 충돌은 409로 명확히 응답합니다.
+        if (userService.existsByUsername(req.username())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "username already exists: " + req.username());
+        }
+        User saved = userService.save(req.toEntity());
+        URI location = URI.create("/users/" + saved.getId());
+        return ResponseEntity.created(location).body(UserResponse.from(saved));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        if (!userService.existsById(id)) { // true/false니까 if로 처리 (optional이 아니니까 이렇게 처리)
+            throw NotFoundException.of("user", id);
+        }
+        userService.deleteById(id);
+        return ResponseEntity.noContent().build(); // 정상적으로 처리했는데 보내줄게 없을때 nocontent를 보내주며 끝낸다.
+    }
+}
