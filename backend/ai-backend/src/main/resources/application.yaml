@@ -4,6 +4,10 @@ spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev} # 기본은 dev로
 
+jwt: # $이 값은 env에서 가져오기
+  secret: ${JWT_SECRET:please-change-this-to-a-32-byte-minimum-secret-key}
+  expiration-millis: ${JWT_EXPIRATION_MILLIS:3600000}
+
 ---
 spring:
   config:

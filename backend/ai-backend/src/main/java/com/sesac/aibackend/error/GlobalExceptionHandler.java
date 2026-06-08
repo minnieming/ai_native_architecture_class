@@ -13,4 +13,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND) // status. 프론트와는 상태코드로 소통할꺼다.
                 .body(ErrorResponse.of("NOT_FOUND", e.getMessage()));
     }
+
+    @ExceptionHandler(DuplicateException.class) // 이걸 해야 409가 에러만 발생하고 땡이 아니라 핸들링 할 수 있게 해준다.
+    public ResponseEntity<ErrorResponse> handleDuplicate(DuplicateException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT) // CONFLICT 내고 끝나게 해준다.
+                .body(ErrorResponse.of("CONFLICT", e.getMessage()));
+    }
 }

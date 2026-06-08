@@ -20,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private final UserRepository userRepository;
+    private final UserRepository userRepository; // 우리 유저
 
     @Override
     public UserDetails loadUserByUsername(String username) {
@@ -38,7 +38,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 password,
-                List.of(authority)
+                List.of(authority) // 유저 객체를 만들어서 떨궈준다.
         );
     }
 }
