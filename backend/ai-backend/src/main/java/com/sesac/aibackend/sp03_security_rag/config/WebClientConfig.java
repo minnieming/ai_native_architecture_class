@@ -24,7 +24,7 @@ public class WebClientConfig { // 파이썬과 비동기 통신시, 이 클라�
     public WebClient pythonWebClient(@Value("${python.base-url}") String baseUrl) { // baseurl을 잡고 시작
         HttpClient httpClient = HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5_000) // deadlock에 빠지지 않기 위해서 정해놓기
-                .responseTimeout(Duration.ofSeconds(30)); // 제한시간 30초
+                .responseTimeout(Duration.ofSeconds(60)); // 제한시간 30초. 이 시간안에 답이 오지 않으면 멈춘다. -> ai의 응답속도에 따라.
 
         return WebClient.builder()
                 .baseUrl(baseUrl)
