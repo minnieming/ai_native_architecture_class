@@ -43,10 +43,11 @@ public class ChatLogController {
                 .toList();
     }
 
-    @PostMapping
-    public ResponseEntity<ChatLogResponse> create(@Valid @RequestBody ChatLogRequest req) {
-        ChatLog saved = chatLogService.save(req.userId(), req.prompt(), req.response());
-        URI location = URI.create("/chat-logs/" + saved.getId());
-        return ResponseEntity.created(location).body(ChatLogResponse.from(saved));
-    }
+//    사용하지 않음
+//    @PostMapping
+//    public ResponseEntity<ChatLogResponse> create(@Valid @RequestBody ChatLogRequest req) {
+//        ChatLog saved = chatLogService.save(req.userId(), req.prompt(), req.response());
+//        URI location = URI.create("/chat-logs/" + saved.getId());
+//        return ResponseEntity.created(location).body(ChatLogResponse.from(saved));
+//    }
 }
