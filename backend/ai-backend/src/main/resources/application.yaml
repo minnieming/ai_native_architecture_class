@@ -31,6 +31,9 @@ app: # 구글은 우리쪽으로 / 우리는 프론트로 리다이렉션 한다
   oauth2:
     redirect-uri: ${OAUTH2_REDIRECT_URI:http://localhost:5173/oauth/callback}
 
+python:
+  base-url: ${PYTHON_BASE_URL:http://localhost:8000}
+
 ---
 spring:
   config:
